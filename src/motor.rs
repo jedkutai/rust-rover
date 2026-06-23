@@ -30,6 +30,7 @@ impl Motor {
         self.pin2.set_low();
 
         self.pin_pwm.set_high();
+
     }
 
     /// Drives the motor backward.
@@ -48,5 +49,20 @@ impl Motor {
         self.pin1.set_low();
         self.pin2.set_low();
     }
+
 }
 
+#[cfg(test)]
+impl Motor {
+    pub(crate) fn pin1_is_high(&self) -> bool {
+        self.pin1.is_set_high()
+    }
+
+    pub(crate) fn pin2_is_high(&self) -> bool {
+        self.pin2.is_set_high()
+    }
+
+    pub(crate) fn pin_pwm_is_high(&self) -> bool {
+        self.pin_pwm.is_set_high()
+    }
+}

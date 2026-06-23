@@ -19,69 +19,80 @@
 mod motor;
 mod rover;
 
-use rppal::gpio::Gpio;
-use std::error::Error;
+// use rppal::gpio::Gpio;
+// use rppal::pwm;
+// use std::error::Error;
 use std::thread::sleep;
 use std::time::Duration;
 
-const PWMA: u8 = 18;
-const AIN2: u8 = 27;
-const AIN1: u8 = 17;
+// use crate::motor::Motor;
+use crate::rover::Rover;
 
-const STBY: u8 = 22;
+// const PWMA: u8 = 18;
+// const AIN2: u8 = 27;
+// const AIN1: u8 = 17;
 
-const BIN1: u8 = 23;
-const BIN2: u8 = 24;
-const PWMB: u8 = 13;
+// const STBY: u8 = 22;
 
-fn main() -> Result<(), Box<dyn Error>> {
+// const BIN1: u8 = 23;
+// const BIN2: u8 = 24;
+// const PWMB: u8 = 13;
+
+fn main()  {
     println!("Starting motor test...");
 
-    let gpio = Gpio::new()?;
+    let mut rover = match Rover::new() {
+        Ok(rover) => rover,
+        Err(error) => {
+            eprintln!("Failed to create rover: {}", error);
+            return;
+        }
+    };
+    
 
-    let mut pwma = gpio.get(PWMA)?.into_output();
-    let mut ain1 = gpio.get(AIN1)?.into_output();
-    let mut ain2 = gpio.get(AIN2)?.into_output();
-
-    let mut stby = gpio.get(STBY)?.into_output();
-
-    let mut bin1 = gpio.get(BIN1)?.into_output();
-    let mut bin2 = gpio.get(BIN2)?.into_output();
-    let mut pwmb = gpio.get(PWMB)?.into_output();
-
-    println!("Waking motor driver...");
-    stby.set_high();
-
-    println!("Motor A forward for 1 second...");
-    ain1.set_high();
-    ain2.set_low();
-    pwma.set_high();
-
+    println!("Move forward for 1 second...");
+    rover.forward();
     sleep(Duration::from_secs(1));
 
-    println!("Stopping Motor A...");
-    pwma.set_low();
-    ain1.set_low();
-    ain2.set_low();
-
+    println!("Turn right for 1 second...");
+    rover.turn_right();
     sleep(Duration::from_secs(1));
 
-    println!("Motor B forward for 1 second...");
-    bin1.set_high();
-    bin2.set_low();
-    pwmb.set_high();
-
+    println!("Turn left for 1 second...");
+    rover.turn_left();
     sleep(Duration::from_secs(1));
 
-    println!("Stopping Motor B...");
-    pwmb.set_low();
-    bin1.set_low();
-    bin2.set_low();
+    rover.stop();
+
+    println!("Move backward for 1 second...");
+    rover.backward();
+    sleep(Duration::from_secs(1));
+
+    println!("Turn right for 1 second...");
+    rover.turn_right();
+    sleep(Duration::from_secs(1));
+
+    println!("Turn left for 1 second...");
+    rover.turn_left();
+    sleep(Duration::from_secs(1));
+
+    rover.stop();
+
+    //spin
+    println!("Turn right for 1 second...");
+    rover.turn_right();
+    sleep(Duration::from_secs(1));
+
+    println!("Turn left for 1 second...");
+    rover.turn_left();
+    sleep(Duration::from_secs(1));
+
+    rover.stop();
 
     println!("Putting driver back in standby...");
-    stby.set_low();
+    drop(rover);
 
     println!("Motor test complete.");
 
-    Ok(())
+    
 }
