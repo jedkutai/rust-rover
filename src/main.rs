@@ -16,6 +16,8 @@
 //         blue_led.blink();
 //     }
 // }
+mod motor;
+mod rover;
 
 use rppal::gpio::Gpio;
 use std::error::Error;
