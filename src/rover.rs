@@ -43,8 +43,8 @@ impl Rover {
         let bin2 = gpio.get(BIN2)?.into_output();
         let pwmb = gpio.get(PWMB)?.into_output();
 
-        let left_motor = Motor::new(ain1, ain2, pwma);
-        let right_motor = Motor::new(bin1, bin2, pwmb);
+        let right_motor = Motor::new(ain1, ain2, pwma);
+        let left_motor = Motor::new(bin1, bin2, pwmb);
 
         stby.set_high();
         Ok(Self {

@@ -1,12 +1,12 @@
 Note: physical pin locations may only be accurate for Raspberry Pi 5
 
-Note: motors A (front) and C (back) are on right side.
+Note: motors A (front) and C (back) are on right side <<from top down view>>.
 Motor A wire 1 → AO1
 Motor A wire 2 → AO2
 Motor C wire 1 → AO1
 Motor C wire 2 → AO2
 
-Note: motors B (front) and D (back) are on left side.
+Note: motors B (front) and D (back) are on left side <<from top down view>>.
 Motor B wire 1 → BO1
 Motor B wire 2 → BO2
 Motor D wire 1 → BO1
