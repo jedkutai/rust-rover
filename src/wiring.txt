@@ -1,0 +1,31 @@
+Note: physical pin locations may only be accurate for Raspberry Pi 5
+
+Note: motors A (front) and C (back) are on right side.
+Motor A wire 1 → AO1
+Motor A wire 2 → AO2
+Motor C wire 1 → AO1
+Motor C wire 2 → AO2
+
+Note: motors B (front) and D (back) are on left side.
+Motor B wire 1 → BO1
+Motor B wire 2 → BO2
+Motor D wire 1 → BO1
+Motor D wire 2 → BO2
+
+Pi 3.3V, physical pin 1 → VCC
+Pi GND, physical pin 6  → GND
+Pi GND + battery black + TB6612FNG GND all connect together
+
+Battery (+) red wire   → VM
+Battery (-) black wire → GND
+
+STBY → Pi GPIO22, physical pin 15
+
+PWMA → Pi GPIO18, physical pin 12
+AIN2 → Pi GPIO27, physical pin 13
+AIN1 → Pi GPIO17, physical pin 11
+
+
+BIN1 → Pi GPIO23, physical pin 16
+BIN2 → Pi GPIO24, physical pin 18
+PWMB → Pi GPIO13, physical pin 33
