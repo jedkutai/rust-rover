@@ -1,13 +1,98 @@
-
 mod motor;
 mod rover;
 
-use std::thread::sleep;
+use crossterm::event::{self, Event, KeyCode, KeyEventKind};
+use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
+use std::error::Error;
 use std::time::Duration;
-use crate::rover::Rover;
 
-const TEST_LENGTH: u64 = 3;
-fn main()  {
+use crate::rover::Rover;
+struct RawModeGuard;
+
+impl RawModeGuard {
+    fn new() -> Result<Self, Box<dyn Error>> {
+        enable_raw_mode()?;
+        Ok(Self)
+    }
+
+    fn drive(&self, rover: &mut Rover) -> Result<(), Box<dyn Error>> {
+        loop {
+            if event::poll(Duration::from_millis(100))? {
+                let event = event::read()?;
+
+                let Event::Key(key_event) = event else {
+                    continue;
+                };
+
+                if key_event.kind != KeyEventKind::Press {
+                    continue;
+                }
+
+                match key_event.code {
+                    KeyCode::Char('w') | KeyCode::Char('W') => {
+                        rover.forward();
+                        println!("\rForward | Speed: {:.0}%     ", rover.get_speed() * 100.0);
+                    }
+
+                    KeyCode::Char('s') | KeyCode::Char('S') => {
+                        rover.backward();
+                        println!("\rBackward | Speed: {:.0}%    ", rover.get_speed() * 100.0);
+                    }
+
+                    KeyCode::Char('a') | KeyCode::Char('A') => {
+                        rover.turn_left();
+                        println!("\rTurn left | Speed: {:.0}%   ", rover.get_speed() * 100.0);
+                    }
+
+                    KeyCode::Char('d') | KeyCode::Char('D') => {
+                        rover.turn_right();
+                        println!("\rTurn right | Speed: {:.0}%  ", rover.get_speed() * 100.0);
+                    }
+
+                    KeyCode::Char('m') | KeyCode::Char('M') => {
+                        rover.increase_speed();
+                        println!("\rSpeed increased: {:.0}%     ", rover.get_speed() * 100.0);
+                    }
+
+                    KeyCode::Char('n') | KeyCode::Char('N') => {
+                        rover.decrease_speed();
+                        println!("\rSpeed decreased: {:.0}%     ", rover.get_speed() * 100.0);
+                    }
+
+                    KeyCode::Char('h') | KeyCode::Char('H') => {
+                        rover.print_controls();
+                        println!("\rSpeed decreased: {:.0}%     ", rover.get_speed() * 100.0);
+                    }
+
+                    KeyCode::Char(' ') => {
+                        rover.stop();
+                        println!("\rStopped                     ");
+                    }
+
+                    KeyCode::Char('x') | KeyCode::Char('X') | KeyCode::Esc => {
+                        rover.stop();
+                        println!("\rExiting...                  ");
+                        break;
+                    }
+
+                    _ => {}
+                }
+            }
+
+            // break;
+        }
+
+        Ok(())
+    }
+}
+
+impl Drop for RawModeGuard {
+    fn drop(&mut self) {
+        let _ = disable_raw_mode();
+    }
+}
+
+fn main() {
     println!("Starting motor test...");
 
     let mut rover = match Rover::new() {
@@ -17,82 +102,26 @@ fn main()  {
             return;
         }
     };
+
+    rover.print_controls();
+
+    let _raw_mode = match RawModeGuard::new() {
+        Ok(_raw_mode) => _raw_mode,
+        Err(error) => {
+            eprintln!("Failed to start raw mode: {}", error);
+            return;
+        }
+    };
+
     
-    rover.set_speed(0.5);
 
-    println!("Move forward for {TEST_LENGTH} second...");
-    rover.forward();
-    sleep(Duration::from_secs(TEST_LENGTH));
-
-    println!("Move right for {TEST_LENGTH} second...");
-    rover.turn_right();
-    sleep(Duration::from_secs(TEST_LENGTH));
-
-    println!("Move left for {TEST_LENGTH} second...");
-    rover.turn_left();
-    sleep(Duration::from_secs(TEST_LENGTH));
-
-    println!("Move backward for {TEST_LENGTH} second...");
-    rover.backward();
-    sleep(Duration::from_secs(TEST_LENGTH));
-
-    println!("Move right for {TEST_LENGTH} second...");
-    rover.turn_right();
-    sleep(Duration::from_secs(TEST_LENGTH));
-
-    println!("Move left for {TEST_LENGTH} second...");
-    rover.turn_left();
-    sleep(Duration::from_secs(TEST_LENGTH));
-
-    rover.stop();
-    sleep(Duration::from_secs(TEST_LENGTH));
-
-    println!("Spin right for {TEST_LENGTH} second...");
-    rover.turn_right();
-    sleep(Duration::from_secs(TEST_LENGTH));
-
-    println!("Spin left for {TEST_LENGTH} second...");
-    rover.turn_left();
-    sleep(Duration::from_secs(TEST_LENGTH));
-    // println!("Turn right for {TEST_LENGTH} second...");
-    // rover.turn_right();
-    // sleep(Duration::from_secs(TEST_LENGTH));
-
-    // println!("Turn left for {TEST_LENGTH} second...");
-    // rover.turn_left();
-    // sleep(Duration::from_secs(TEST_LENGTH));
-
-    // rover.stop();
-
-    // println!("Move backward for {TEST_LENGTH} second...");
-    // rover.backward();
-    // sleep(Duration::from_secs(TEST_LENGTH));
-
-    // println!("Turn right for {TEST_LENGTH} second...");
-    // rover.turn_right();
-    // sleep(Duration::from_secs(TEST_LENGTH));
-
-    // println!("Turn left for {TEST_LENGTH} second...");
-    // rover.turn_left();
-    // sleep(Duration::from_secs(TEST_LENGTH));
-
-    // rover.stop();
-
-    // //spin
-    // println!("Turn right for {TEST_LENGTH} second...");
-    // rover.turn_right();
-    // sleep(Duration::from_secs(TEST_LENGTH));
-
-    // println!("Turn left for {TEST_LENGTH} second...");
-    // rover.turn_left();
-    // sleep(Duration::from_secs(TEST_LENGTH));
-
-
-    println!("Putting driver back in standby...");
-    rover.stop();
-
-
-    println!("Motor test complete.");
+    match _raw_mode.drive(&mut rover) {
+        Ok(()) => {},
+        Err(error) => {
+            eprintln!("Failed to drive rover: {}", error);
+            return;
+        }
+    }
 
     
 }

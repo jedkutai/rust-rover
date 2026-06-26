@@ -52,7 +52,7 @@ impl Rover {
         })
     }
 
-    pub fn set_speed(&mut self, speed: f64) {
+    fn set_speed(&mut self, speed: f64) {
         match self.left_motor.set_speed(speed) {
             Ok(()) => match self.right_motor.set_speed(speed) {
                 Ok(()) => {}
@@ -149,12 +149,12 @@ impl Rover {
     pub fn turn_right(&mut self) {
         match self.direction {
             Direction::Forward => {
-                self.update_speed_right( self.speed * 0.5);
-                self.update_speed_left( self.speed);
+                self.update_speed_right(self.speed * 0.5);
+                self.update_speed_left(self.speed);
             }
             Direction::Backward => {
-                self.update_speed_right( self.speed * 0.5);
-                self.update_speed_left( self.speed);
+                self.update_speed_right(self.speed * 0.5);
+                self.update_speed_left(self.speed);
             }
             Direction::None => {
                 self.set_speed(self.speed);
@@ -218,12 +218,40 @@ impl Rover {
         }
     }
 
+    /// decrease the speed of the rover
+    pub fn increase_speed(&mut self) {
+        self.set_speed(self.speed + 0.1);
+    }
+
+    /// decrease the speed of the rover
+    pub fn decrease_speed(&mut self) {
+        self.set_speed(self.speed - 0.1);
+    }
+
+    pub fn get_speed(&self) -> f64 {
+        self.speed
+    }
     /// Stops all motors.
     pub fn stop(&mut self) {
         self.direction = Direction::None;
         self.left_motor.stop();
         self.right_motor.stop();
         self.set_speed(self.speed);
+    }
+
+
+    /// Print out the controls for the rover
+    pub fn print_controls(&self) {
+        println!("\nRover Controls:");
+        println!("  W      -> forward");
+        println!("  S      -> backward");
+        println!("  A      -> turn left");
+        println!("  D      -> turn right");
+        println!("  M      -> increase speed");
+        println!("  N      -> decrease speed");
+        println!("  Space  -> stop");
+        println!("  X/Esc  -> exit");
+        println!("  H      -> Reprint Controls");
     }
 }
 
