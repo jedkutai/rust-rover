@@ -1,6 +1,6 @@
 use rppal::gpio::{Gpio, OutputPin};
 
-use crate::motor::Motor;
+use crate::motor::MotorPair;
 
 const PWMA: u8 = 18;
 const AIN2: u8 = 27;
@@ -23,13 +23,13 @@ enum Direction {
 /// Uses tank steering.
 pub struct Rover {
     stby: OutputPin,
-    left_motor: Motor,
-    right_motor: Motor,
+    left_motor_pair: MotorPair,
+    right_motor_pair: MotorPair,
     direction: Direction,
 }
 
 impl Rover {
-    /// Creates a new `Rover` from a left and right motor.
+    /// Creates a new `Rover` from a left and right motor pair.
     pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
         let gpio = Gpio::new()?;
 
@@ -43,14 +43,14 @@ impl Rover {
         let bin2 = gpio.get(BIN2)?.into_output();
         let pwmb = gpio.get(PWMB)?.into_output();
 
-        let right_motor = Motor::new(ain1, ain2, pwma);
-        let left_motor = Motor::new(bin1, bin2, pwmb);
+        let right_motor = MotorPair::new(ain1, ain2, pwma);
+        let left_motor = MotorPair::new(bin1, bin2, pwmb);
 
         stby.set_high();
         Ok(Self {
             stby,
-            left_motor,
-            right_motor,
+            left_motor_pair: left_motor,
+            right_motor_pair: right_motor,
             direction: Direction::None,
         })
     }
@@ -58,58 +58,70 @@ impl Rover {
     /// Moves the rover forward.
     pub fn forward(&mut self) {
         self.direction = Direction::Forward;
-        self.left_motor.forward();
-        self.right_motor.forward();
+        self.left_motor_pair.forward();
+        self.right_motor_pair.forward();
     }
 
     /// Moves the rover backward.
     pub fn backward(&mut self) {
         self.direction = Direction::Backward;
-        self.left_motor.backward();
-        self.right_motor.backward();
+        self.left_motor_pair.backward();
+        self.right_motor_pair.backward();
     }
 
-    /// Turns right by moving only the left motor.
+    /// Turns rover right.
+    /// 
+    /// If the rover is moving forward/backwards when this is called:
+    /// The rover will turn to the right
+    /// 
+    /// If the rover is still when this is called:
+    /// It will spin in place (clockwise)
     pub fn turn_right(&mut self) {
         match self.direction {
             Direction::Forward => {
-                self.left_motor.forward();
-                self.right_motor.stop();
+                self.left_motor_pair.forward();
+                self.right_motor_pair.stop();
             }
             Direction::Backward => {
-                self.left_motor.backward();
-                self.right_motor.stop();
+                self.left_motor_pair.backward();
+                self.right_motor_pair.stop();
             }
             Direction::None => {
-                self.left_motor.forward();
-                self.right_motor.backward();
+                self.left_motor_pair.forward();
+                self.right_motor_pair.backward();
             }
         }
     }
 
-    /// Turns left by moving only the right motor.
+    /// Turns rover left.
+    /// 
+    /// If the rover is moving forward/backwards when this is called:
+    /// The rover will turn to the left
+    /// 
+    /// If the rover is still when this is called:
+    /// It will spin in place (counterclockwise)
     pub fn turn_left(&mut self) {
         match self.direction {
             Direction::Forward => {
-                self.left_motor.stop();
-                self.right_motor.forward();
+                self.left_motor_pair.stop();
+                self.right_motor_pair.forward();
             }
             Direction::Backward => {
-                self.left_motor.stop();
-                self.right_motor.backward();
+                self.left_motor_pair.stop();
+                self.right_motor_pair.backward();
             }
             Direction::None => {
-                self.left_motor.backward();
-                self.right_motor.forward();
+                self.left_motor_pair.backward();
+                self.right_motor_pair.forward();
             }
         }
     }
 
-    /// Stops both motors.
+    /// Stops all motors.
     pub fn stop(&mut self) {
         self.direction = Direction::None;
-        self.left_motor.stop();
-        self.right_motor.stop();
+        self.left_motor_pair.stop();
+        self.right_motor_pair.stop();
     }
 }
 
@@ -120,9 +132,8 @@ impl Drop for Rover {
         self.stby.set_low();
     }
 }
-//use this to run tests. will fail otherwise
-//cargo test -- --test-threads=1
 
+///Tests are being run on single thread to avoid issues with creating mutliple objects using the same pins
 #[cfg(test)]
 mod test {
     use super::*;

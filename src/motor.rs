@@ -3,13 +3,13 @@ use rppal::gpio::OutputPin;
 /// Controls one DC motor through a motor driver.
 ///
 /// The motor uses two direction pins and one PWM pin.
-pub struct Motor {
+pub struct MotorPair {
     pin1: OutputPin,
     pin2: OutputPin,
     pin_pwm: OutputPin,
 }
 
-impl Motor {
+impl MotorPair {
     /// Creates a new `Motor`.
     ///
     /// `pin1` and `pin2` control direction.
@@ -51,7 +51,7 @@ impl Motor {
 }
 
 #[cfg(test)]
-impl Motor {
+impl MotorPair {
     pub(crate) fn pin1_is_high(&self) -> bool {
         self.pin1.is_set_high()
     }
@@ -66,7 +66,7 @@ impl Motor {
 
     // const STBY: u8 = 22;
 
-    pub(crate) fn get_test_motor_a() -> Result<Motor, Box<dyn std::error::Error>> {
+    pub(crate) fn get_test_motor_a() -> Result<MotorPair, Box<dyn std::error::Error>> {
         use rppal::gpio::Gpio;
         const PWMA: u8 = 18;
         const AIN2: u8 = 27;
@@ -77,11 +77,11 @@ impl Motor {
         let ain1 = gpio.get(AIN1)?.into_output();
         let ain2 = gpio.get(AIN2)?.into_output();
 
-        let motor = Motor::new(ain1, ain2, pwma);
+        let motor = MotorPair::new(ain1, ain2, pwma);
         Ok(motor)
     }
 
-    pub(crate) fn get_test_motor_b() -> Result<Motor, Box<dyn std::error::Error>> {
+    pub(crate) fn get_test_motor_b() -> Result<MotorPair, Box<dyn std::error::Error>> {
         use rppal::gpio::Gpio;
 
         const BIN1: u8 = 23;
@@ -93,7 +93,7 @@ impl Motor {
         let bin2 = gpio.get(BIN2)?.into_output();
         let pwmb = gpio.get(PWMB)?.into_output();
 
-        let motor = Motor::new(bin1, bin2, pwmb);
+        let motor = MotorPair::new(bin1, bin2, pwmb);
 
         Ok(motor)
     }
@@ -106,7 +106,7 @@ mod test {
     #[test]
     #[ignore = "requires Raspberry Pi GPIO"]
     fn should_move_forward() {
-        let mut motor_a = match Motor::get_test_motor_a() {
+        let mut motor_a = match MotorPair::get_test_motor_a() {
             Ok(motor) => motor,
             Err(error) => {
                 eprintln!("Failed to create motor: {}", error);
@@ -115,7 +115,7 @@ mod test {
             }
         };
 
-        let mut motor_b = match Motor::get_test_motor_b() {
+        let mut motor_b = match MotorPair::get_test_motor_b() {
             Ok(motor) => motor,
             Err(error) => {
                 eprintln!("Failed to create motor: {}", error);
@@ -140,7 +140,7 @@ mod test {
     #[test]
     #[ignore = "requires Raspberry Pi GPIO"]
     fn should_move_backward() {
-        let mut motor_a = match Motor::get_test_motor_a() {
+        let mut motor_a = match MotorPair::get_test_motor_a() {
             Ok(motor) => motor,
             Err(error) => {
                 eprintln!("Failed to create motor: {}", error);
@@ -149,7 +149,7 @@ mod test {
             }
         };
 
-        let mut motor_b = match Motor::get_test_motor_b() {
+        let mut motor_b = match MotorPair::get_test_motor_b() {
             Ok(motor) => motor,
             Err(error) => {
                 eprintln!("Failed to create motor: {}", error);
@@ -174,7 +174,7 @@ mod test {
     #[test]
     #[ignore = "requires Raspberry Pi GPIO"]
     fn should_stop() {
-        let mut motor_a = match Motor::get_test_motor_a() {
+        let mut motor_a = match MotorPair::get_test_motor_a() {
             Ok(motor) => motor,
             Err(error) => {
                 eprintln!("Failed to create motor: {}", error);
@@ -183,7 +183,7 @@ mod test {
             }
         };
 
-        let mut motor_b = match Motor::get_test_motor_b() {
+        let mut motor_b = match MotorPair::get_test_motor_b() {
             Ok(motor) => motor,
             Err(error) => {
                 eprintln!("Failed to create motor: {}", error);
