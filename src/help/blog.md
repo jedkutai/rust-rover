@@ -69,3 +69,24 @@ Planned controls:
 
 This will make testing the rover much easier because I will be able to control it interactively instead of hardcoding movement sequences.
 
+### 6/26 — 10:45
+Guess what? It works. I can control the rover from the keyboard and it drives exactly how I want it.
+
+Next step is to figure out how to wire the sensors. 
+
+I am a bit worried about space and might end up attaching only one of the sensors. We'll see.
+
+### 6/30 — 10:00
+Took a long break. Was busy with work and other stuff, but we are back.
+I wish I color coded the wires. Todays objective is to figure out the wiring for the four sensors.
+Should just be copy paste for all four (I hope).
+I am thinking of putting each one on its own mini breadboard.
+
+### 6/30 — 11:00
+Yeah still haven't gotten it to work. I am awful at wiring.
+
+Dude. I didn't have the board plugged in this whole time. Jeez man. I stink lol.
+
+### 6/30 — 11:40
+Okay. Sensors are all wired. One was connected and tested. Going to do the others after this meeting.
+If they all work once connected. I need to figure out how to sit them all on the rover. After that I will worry about the code.
