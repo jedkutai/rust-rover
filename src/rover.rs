@@ -1,6 +1,8 @@
 use rppal::gpio::{Gpio, OutputPin};
+use std::error::Error;
 
 use crate::motor::{Direction, Motor};
+use crate::cluster::Cluster;
 
 const PWMA: u8 = 18;
 const AIN2: u8 = 27;
@@ -12,6 +14,12 @@ const BIN1: u8 = 23;
 const BIN2: u8 = 24;
 const PWMB: u8 = 13;
 
+#[derive(Debug, PartialEq, Copy, Clone)]
+pub enum DetectionToggle {
+    On,
+    Off,
+}
+
 /// Controls the rover by coordinating the left and right motors.
 ///
 /// Uses tank steering.
@@ -19,14 +27,16 @@ pub struct Rover {
     stby: OutputPin,
     left_motor: Motor,
     right_motor: Motor,
+    cluster: Cluster,
     direction: Direction,
+    detection_toggle: DetectionToggle,
     speed: f64,
 }
 
 impl Rover {
     /// Creates a new `Rover` from a left and right motor pair.
     /// The two left motors and two right motors are treated as one since this is going to drive like a tank
-    pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new() -> Result<Self, Box<dyn Error>> {
         let gpio = Gpio::new()?;
 
         let mut stby = gpio.get(STBY)?.into_output();
@@ -41,13 +51,22 @@ impl Rover {
 
         let left_motor = Motor::new(bin1, bin2, pwmb);
         let right_motor = Motor::new(ain1, ain2, pwma);
+        let cluster = match Cluster::new() {
+            Ok(cluster) => cluster,
+            Err(error) => {
+                eprintln!("Failed to create cluster: {}", error);
+                return Err(error);
+            }
+        };
 
         stby.set_high();
         Ok(Self {
             stby,
             left_motor,
             right_motor,
+            cluster,
             direction: Direction::None,
+            detection_toggle: DetectionToggle::On,
             speed: 1.0,
         })
     }

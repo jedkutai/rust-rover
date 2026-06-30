@@ -1,1 +1,14 @@
 https://thepihut.com/blogs/raspberry-pi-tutorials/hc-sr04-ultrasonic-range-sensor-on-the-raspberry-pi
+
+
+Front TRIG → GPIO5,  physical pin 29
+Front ECHO → GPIO6,  physical pin 31
+
+Left TRIG  → GPIO12, physical pin 32
+Left ECHO  → GPIO16, physical pin 36
+
+Right TRIG → GPIO20, physical pin 38
+Right ECHO → GPIO21, physical pin 40
+
+Rear TRIG  → GPIO25, physical pin 22
+Rear ECHO  → GPIO26, physical pin 37
