@@ -38,7 +38,7 @@ impl Motor {
 
     /// set speed of pwm
     pub fn set_speed(&mut self, speed: f64) -> Result<(), Box<dyn Error>> {
-        self.speed = speed.clamp(0.0, 1.0);
+        self.speed = speed.clamp(0.2, 1.0);
         if self.direction != Direction::None {
             self.pin_pwm.set_pwm_frequency(PWM_FREQUENCY, self.speed)?;
         }
@@ -99,15 +99,17 @@ impl Motor {
     // const STBY: u8 = 22;
 
     pub(crate) fn get_test_motor_a() -> Result<Motor, Box<dyn std::error::Error>> {
+        use crate::constants::pins;
         use rppal::gpio::Gpio;
-        const PWMA: u8 = 18;
-        const AIN2: u8 = 27;
-        const AIN1: u8 = 17;
+
+        // const PWMA: u8 = 18;
+        // const AIN2: u8 = 27;
+        // const AIN1: u8 = 17;
 
         let gpio = Gpio::new()?;
-        let pwma = gpio.get(PWMA)?.into_output();
-        let ain1 = gpio.get(AIN1)?.into_output();
-        let ain2 = gpio.get(AIN2)?.into_output();
+        let pwma = gpio.get(pins::MOTOR_PWMA)?.into_output();
+        let ain1 = gpio.get(pins::MOTOR_AIN1)?.into_output();
+        let ain2 = gpio.get(pins::MOTOR_AIN2)?.into_output();
 
         let motor = Motor::new(ain1, ain2, pwma);
         Ok(motor)
@@ -116,14 +118,16 @@ impl Motor {
     pub(crate) fn get_test_motor_b() -> Result<Motor, Box<dyn std::error::Error>> {
         use rppal::gpio::Gpio;
 
-        const BIN1: u8 = 23;
-        const BIN2: u8 = 24;
-        const PWMB: u8 = 13;
+        use crate::constants::pins;
+
+        // const BIN1: u8 = 23;
+        // const BIN2: u8 = 24;
+        // const PWMB: u8 = 13;
 
         let gpio = Gpio::new()?;
-        let bin1 = gpio.get(BIN1)?.into_output();
-        let bin2 = gpio.get(BIN2)?.into_output();
-        let pwmb = gpio.get(PWMB)?.into_output();
+        let bin1 = gpio.get(pins::MOTOR_BIN1)?.into_output();
+        let bin2 = gpio.get(pins::MOTOR_BIN2)?.into_output();
+        let pwmb = gpio.get(pins::MOTOR_PWMB)?.into_output();
 
         let motor = Motor::new(bin1, bin2, pwmb);
 

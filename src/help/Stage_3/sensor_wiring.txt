@@ -12,3 +12,6 @@ Right ECHO → GPIO21, physical pin 40
 
 Rear TRIG  → GPIO25, physical pin 22
 Rear ECHO  → GPIO26, physical pin 37
+
+All the GRND pins should go to whatever GRND Pi pin is easiest.
+All the VCC pins should go to whatever 5V Pi pin is easiest

@@ -90,3 +90,41 @@ Dude. I didn't have the board plugged in this whole time. Jeez man. I stink lol.
 ### 6/30 — 11:40
 Okay. Sensors are all wired. One was connected and tested. Going to do the others after this meeting.
 If they all work once connected. I need to figure out how to sit them all on the rover. After that I will worry about the code.
+
+
+### 7/1 — 02:30
+All the sensors are wired and tested. All I need to do is implement the accident detection logic and fit the Pi and batteries onto the rig.
+I was originally going to allow the detection to toggle on and off but I am not going to do that anymore.
+
+
+### 7/1 — 18:30
+The half motor for turning idea is cool on paper, but it is horrible in reality.
+I am switching to always tank turning no matter what.
+I am also making the minumum speed 20% because the rover is to heavy to move at 10%.
+
+The sensor works but it only works if something is head on. Since the rover is much wider than the sensor, 
+it still bumps into things/ doesn't turn all the way. 
+I have an idea for fixing it but that will be in rover 2.0
+
+I also need to buy better sensors for rover 2.0, this one still bumps into things sometimes.
+I am a big fan of this kind of projects. This has been the most fun and frustrating coding project I have ever done.
+The coding portion isn't really too difficult, but wiring this thing was an experience.
+
+It's like a different form of playing with legos.
+
+
+Rover 2.0 ideas
+I need a better chasis. One that actually steers.
+
+### 7/7 — 08:30
+I am back. Got busy with work but I'm back.
+I moved 3 sensors to the front and I'm leaving one in the back.
+
+The front left sensor is facing diagonally to the right.
+The front middle sensor is facint straight forwards.
+The front right sensor is facing diagonally to the left.
+
+This is to deal this the sensors not picking things up that are on an angle.
+If any of the sensors detect and object in the same direction that it is moving, the rover will stop.
+
+When I am finished changing the sensor logic. I will refactor the rest of my code.

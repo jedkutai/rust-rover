@@ -3,14 +3,14 @@ use std::error::Error;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
-const FRONT_TRIG: u8 = 5; // physical pin 29
-const FRONT_ECHO: u8 = 6; // physical pin 31
+// const FRONT_TRIG: u8 = 5;
+// const FRONT_ECHO: u8 = 6;
 
-const LEFT_TRIG: u8 = 12;
-const LEFT_ECHO: u8 = 16;
+// const LEFT_TRIG: u8 = 12;
+// const LEFT_ECHO: u8 = 16;
 
-const RIGHT_TRIG: u8 = 20;
-const RIGHT_ECHO: u8 = 21;
+// const RIGHT_TRIG: u8 = 20;
+// const RIGHT_ECHO: u8 = 21;
 
 const REAR_TRIG: u8 = 25;
 const REAR_ECHO: u8 = 26;
@@ -22,8 +22,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let gpio = Gpio::new()?;
 
-    let mut trig = gpio.get(FRONT_TRIG)?.into_output();
-    let echo = gpio.get(FRONT_ECHO)?.into_input();
+    // let mut trig = gpio.get(FRONT_TRIG)?.into_output();
+    // let echo = gpio.get(FRONT_ECHO)?.into_input();
 
     // let mut trig = gpio.get(LEFT_TRIG)?.into_output();
     // let echo = gpio.get(LEFT_ECHO)?.into_input();
@@ -31,8 +31,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     // let mut trig = gpio.get(RIGHT_TRIG)?.into_output();
     // let echo = gpio.get(RIGHT_ECHO)?.into_input();
 
-    // let mut trig = gpio.get(REAR_TRIG)?.into_output();
-    // let echo = gpio.get(REAR_ECHO)?.into_input();
+    let mut trig = gpio.get(REAR_TRIG)?.into_output();
+    let echo = gpio.get(REAR_ECHO)?.into_input();
 
     loop {
         match read_distance_cm(&mut trig, &echo) {

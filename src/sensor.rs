@@ -3,6 +3,8 @@ use std::error::Error;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
+use crate::constants::times;
+
 pub struct Sensor {
     trig_pin: OutputPin,
     echo_pin: InputPin,
@@ -16,17 +18,17 @@ impl Sensor {
     pub fn read_distance_cm(&mut self) -> Result<f64, Box<dyn Error>> {
         // Make sure trigger starts low
         self.trig_pin.set_low();
-        sleep(Duration::from_micros(2)); 
+        sleep(Duration::from_micros(times::SENSOR_SET_LOW_PAUSE)); 
 
         // Send 10 microsecond pulse to start measurement
         self.trig_pin.set_high();
-        sleep(Duration::from_micros(10));
+        sleep(Duration::from_micros(times::SENSOR_SET_HIGH_PAUSE));
         self.trig_pin.set_low();
 
         // Wait for ECHO to go HIGH
         let wait_start = Instant::now();
         while self.echo_pin.is_low() {
-            if wait_start.elapsed() > Duration::from_millis(50) {
+            if wait_start.elapsed() > Duration::from_millis(times::SENSOR_TIMEOUT) {
                 return Err("Timed out waiting for ECHO to go HIGH".into());
             }
         }
@@ -34,7 +36,7 @@ impl Sensor {
         // Measure how long ECHO stays HIGH
         let echo_start = Instant::now();
         while self.echo_pin.is_high() {
-            if echo_start.elapsed() > Duration::from_millis(50) {
+            if echo_start.elapsed() > Duration::from_millis(times::SENSOR_TIMEOUT) {
                 return Err("Timed out waiting for ECHO to go LOW".into());
             }
         }

@@ -1,24 +1,25 @@
 use rppal::gpio::{Gpio, OutputPin};
 use std::error::Error;
 
-use crate::motor::{Direction, Motor};
 use crate::cluster::Cluster;
+use crate::motor::{Direction, Motor};
+use crate::constants::pins;
 
-const PWMA: u8 = 18;
-const AIN2: u8 = 27;
-const AIN1: u8 = 17;
+// const PWMA: u8 = 18;
+// const AIN2: u8 = 27;
+// const AIN1: u8 = 17;
 
-const STBY: u8 = 22;
+// const STBY: u8 = 22;
 
-const BIN1: u8 = 23;
-const BIN2: u8 = 24;
-const PWMB: u8 = 13;
+// const BIN1: u8 = 23;
+// const BIN2: u8 = 24;
+// const PWMB: u8 = 13;
 
-#[derive(Debug, PartialEq, Copy, Clone)]
-pub enum DetectionToggle {
-    On,
-    Off,
-}
+// #[derive(Debug, PartialEq, Copy, Clone)]
+// pub enum DetectionToggle {
+//     On,
+//     Off,
+// }
 
 /// Controls the rover by coordinating the left and right motors.
 ///
@@ -27,9 +28,9 @@ pub struct Rover {
     stby: OutputPin,
     left_motor: Motor,
     right_motor: Motor,
-    cluster: Cluster,
+    pub cluster: Cluster,
     direction: Direction,
-    detection_toggle: DetectionToggle,
+    // detection_toggle: DetectionToggle,
     speed: f64,
 }
 
@@ -39,15 +40,15 @@ impl Rover {
     pub fn new() -> Result<Self, Box<dyn Error>> {
         let gpio = Gpio::new()?;
 
-        let mut stby = gpio.get(STBY)?.into_output();
+        let mut stby = gpio.get(pins::MOTOR_STBY)?.into_output();
 
-        let pwma = gpio.get(PWMA)?.into_output();
-        let ain1 = gpio.get(AIN1)?.into_output();
-        let ain2 = gpio.get(AIN2)?.into_output();
+        let pwma = gpio.get(pins::MOTOR_PWMA)?.into_output();
+        let ain1 = gpio.get(pins::MOTOR_AIN1)?.into_output();
+        let ain2 = gpio.get(pins::MOTOR_AIN2)?.into_output();
 
-        let bin1 = gpio.get(BIN1)?.into_output();
-        let bin2 = gpio.get(BIN2)?.into_output();
-        let pwmb = gpio.get(PWMB)?.into_output();
+        let bin1 = gpio.get(pins::MOTOR_BIN1)?.into_output();
+        let bin2 = gpio.get(pins::MOTOR_BIN2)?.into_output();
+        let pwmb = gpio.get(pins::MOTOR_PWMB)?.into_output();
 
         let left_motor = Motor::new(bin1, bin2, pwmb);
         let right_motor = Motor::new(ain1, ain2, pwma);
@@ -66,14 +67,15 @@ impl Rover {
             right_motor,
             cluster,
             direction: Direction::None,
-            detection_toggle: DetectionToggle::On,
+            // detection_toggle: DetectionToggle::On,
             speed: 1.0,
         })
     }
 
     fn set_speed(&mut self, speed: f64) {
-        match self.left_motor.set_speed(speed) {
-            Ok(()) => match self.right_motor.set_speed(speed) {
+        let new_speed = speed.clamp(0.2, 1.0);
+        match self.left_motor.set_speed(new_speed) {
+            Ok(()) => match self.right_motor.set_speed(new_speed) {
                 Ok(()) => {}
                 Err(error) => {
                     eprintln!("Failed to update right motor speed: {}", error);
@@ -87,31 +89,9 @@ impl Rover {
                 return;
             }
         }
-        self.speed = speed;
+        self.speed = new_speed;
     }
 
-    fn update_speed_left(&mut self, speed: f64) {
-        match self.left_motor.set_speed(speed) {
-            Ok(()) => {}
-            Err(error) => {
-                eprintln!("Failed to update left motor speed: {}", error);
-                self.stop();
-                return;
-            }
-        }
-    }
-
-    fn update_speed_right(&mut self, speed: f64) {
-        match self.right_motor.set_speed(speed) {
-            Ok(()) => {}
-            Err(error) => {
-                eprintln!("Failed to update right motor speed: {}", error);
-                self.stop();
-                return;
-            }
-        }
-    }
-    /// Moves the rover forward.
     pub fn forward(&mut self) {
         self.direction = Direction::Forward;
         self.set_speed(self.speed);
@@ -160,81 +140,47 @@ impl Rover {
 
     /// Turns rover right.
     ///
-    /// If the rover is moving forward/backwards when this is called:
-    /// The rover will turn to the right
-    ///
-    /// If the rover is still when this is called:
     /// It will spin in place (clockwise)
     pub fn turn_right(&mut self) {
-        match self.direction {
-            Direction::Forward => {
-                self.update_speed_right(self.speed * 0.5);
-                self.update_speed_left(self.speed);
+        match self.left_motor.forward() {
+            Ok(()) => {}
+            Err(error) => {
+                eprintln!("Failed to move left motor forward: {}", error);
+                self.stop();
+                return;
             }
-            Direction::Backward => {
-                self.update_speed_right(self.speed * 0.5);
-                self.update_speed_left(self.speed);
+        };
+        match self.right_motor.backward() {
+            Ok(()) => {}
+            Err(error) => {
+                eprintln!("Failed to move right motor backward: {}", error);
+                self.stop();
+                return;
             }
-            Direction::None => {
-                self.set_speed(self.speed);
-                match self.left_motor.forward() {
-                    Ok(()) => {}
-                    Err(error) => {
-                        eprintln!("Failed to move left motor forward: {}", error);
-                        self.stop();
-                        return;
-                    }
-                };
-                match self.right_motor.backward() {
-                    Ok(()) => {}
-                    Err(error) => {
-                        eprintln!("Failed to move right motor backward: {}", error);
-                        self.stop();
-                        return;
-                    }
-                };
-            }
-        }
+        };
     }
 
     /// Turns rover left.
     ///
-    /// If the rover is moving forward/backwards when this is called:
-    /// The rover will turn to the left
-    ///
-    /// If the rover is still when this is called:
     /// It will spin in place (counterclockwise)
     pub fn turn_left(&mut self) {
-        match self.direction {
-            Direction::Forward => {
-                self.update_speed_left(self.speed * 0.5);
-                self.update_speed_right(self.speed);
+        match self.left_motor.backward() {
+            Ok(()) => {}
+            Err(error) => {
+                eprintln!("Failed to move left motor backward: {}", error);
+                self.stop();
+                return;
             }
-            Direction::Backward => {
-                self.update_speed_left(self.speed * 0.5);
-                self.update_speed_right(self.speed);
-            }
-            Direction::None => {
-                self.set_speed(self.speed);
-                match self.left_motor.backward() {
-                    Ok(()) => {}
-                    Err(error) => {
-                        eprintln!("Failed to move left motor backward: {}", error);
-                        self.stop();
-                        return;
-                    }
-                };
+        };
 
-                match self.right_motor.forward() {
-                    Ok(()) => {}
-                    Err(error) => {
-                        eprintln!("Failed to move right motor forward: {}", error);
-                        self.stop();
-                        return;
-                    }
-                };
+        match self.right_motor.forward() {
+            Ok(()) => {}
+            Err(error) => {
+                eprintln!("Failed to move right motor forward: {}", error);
+                self.stop();
+                return;
             }
-        }
+        };
     }
 
     /// decrease the speed of the rover
@@ -250,6 +196,10 @@ impl Rover {
     pub fn get_speed(&self) -> f64 {
         self.speed
     }
+
+    pub fn get_direction(&mut self) -> Direction {
+        self.direction
+    }
     /// Stops all motors.
     pub fn stop(&mut self) {
         self.direction = Direction::None;
@@ -257,7 +207,6 @@ impl Rover {
         self.right_motor.stop();
         self.set_speed(self.speed);
     }
-
 
     /// Print out the controls for the rover
     pub fn print_controls(&self) {

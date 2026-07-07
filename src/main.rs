@@ -1,7 +1,12 @@
+mod cluster;
 mod motor;
 mod rover;
 mod sensor;
-mod cluster;
+
+mod constants;
+
+use crate::cluster::Proximity;
+use crate::motor::Direction;
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
@@ -10,8 +15,6 @@ use std::time::Duration;
 
 use crate::rover::Rover;
 struct RawModeGuard;
-
-
 
 fn main() {
     println!("Starting motor test...");
@@ -34,17 +37,13 @@ fn main() {
         }
     };
 
-    
-
     match _raw_mode.drive(&mut rover) {
-        Ok(()) => {},
+        Ok(()) => {}
         Err(error) => {
             eprintln!("Failed to drive rover: {}", error);
             return;
         }
     }
-
-    
 }
 
 impl RawModeGuard {
@@ -53,8 +52,28 @@ impl RawModeGuard {
         Ok(Self)
     }
 
+    fn detect(&self, rover: &mut Rover) {
+        rover.cluster.poll();
+
+        match rover.get_direction() {
+            Direction::Forward => {
+                if rover.cluster.get_front_proximity() == Proximity::Near {
+                    rover.stop();
+                }
+            }
+            Direction::Backward => {
+                if rover.cluster.get_rear_proximity() == Proximity::Near {
+                    rover.stop();
+                }
+            }
+            Direction::None => {}
+        }
+    }
+
     fn drive(&self, rover: &mut Rover) -> Result<(), Box<dyn Error>> {
         loop {
+            self.detect(rover);
+
             if event::poll(Duration::from_millis(100))? {
                 let event = event::read()?;
 
