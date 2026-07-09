@@ -128,3 +128,7 @@ This is to deal this the sensors not picking things up that are on an angle.
 If any of the sensors detect and object in the same direction that it is moving, the rover will stop.
 
 When I am finished changing the sensor logic. I will refactor the rest of my code.
+
+### 7/8 — 12:00
+I am addint the ability to turn the detection on and off.
+Also adding an led that will indicate what mode that the rover is in.

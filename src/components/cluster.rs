@@ -3,27 +3,10 @@ use std::error::Error;
 use std::thread::sleep;
 use std::time::Duration;
 
-use crate::sensor::Sensor;
+use crate::components::sensor::Sensor;
 use crate::constants::{pins, times};
+use crate::enums::proximity::Proximity;
 
-// const FRONT_TRIG: u8 = 5;
-// const FRONT_ECHO: u8 = 6;
-
-// const LEFT_TRIG: u8 = 12;
-// const LEFT_ECHO: u8 = 16;
-
-// const RIGHT_TRIG: u8 = 20;
-// const RIGHT_ECHO: u8 = 21;
-
-// const REAR_TRIG: u8 = 25;
-// const REAR_ECHO: u8 = 26;
-
-#[derive(Debug, PartialEq, Copy, Clone)]
-pub enum Proximity {
-    Near,
-    Medium,
-    Far,
-}
 pub struct Cluster {
     front_center_sensor: Sensor,
     front_right_sensor: Sensor,
@@ -31,8 +14,6 @@ pub struct Cluster {
     rear_sensor: Sensor,
 
     front_proximity: Proximity,
-    // right_proximity: Proximity,
-    // left_proximity: Proximity,
     rear_proximity: Proximity,
 }
 

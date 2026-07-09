@@ -1,25 +1,12 @@
+use crate::components::cluster::Cluster;
+use crate::components::led::Led;
+use crate::components::motor::Motor;
+use crate::constants::pins;
+use crate::enums::direction::Direction;
+use crate::enums::proximity::Proximity;
+
 use rppal::gpio::{Gpio, OutputPin};
 use std::error::Error;
-
-use crate::cluster::Cluster;
-use crate::motor::{Direction, Motor};
-use crate::constants::pins;
-
-// const PWMA: u8 = 18;
-// const AIN2: u8 = 27;
-// const AIN1: u8 = 17;
-
-// const STBY: u8 = 22;
-
-// const BIN1: u8 = 23;
-// const BIN2: u8 = 24;
-// const PWMB: u8 = 13;
-
-// #[derive(Debug, PartialEq, Copy, Clone)]
-// pub enum DetectionToggle {
-//     On,
-//     Off,
-// }
 
 /// Controls the rover by coordinating the left and right motors.
 ///
@@ -28,9 +15,10 @@ pub struct Rover {
     stby: OutputPin,
     left_motor: Motor,
     right_motor: Motor,
-    pub cluster: Cluster,
+    cluster: Cluster,
     direction: Direction,
-    // detection_toggle: DetectionToggle,
+    detection_on: bool,
+    led: Led,
     speed: f64,
 }
 
@@ -52,10 +40,18 @@ impl Rover {
 
         let left_motor = Motor::new(bin1, bin2, pwmb);
         let right_motor = Motor::new(ain1, ain2, pwma);
+        
         let cluster = match Cluster::new() {
             Ok(cluster) => cluster,
             Err(error) => {
                 eprintln!("Failed to create cluster: {}", error);
+                return Err(error);
+            }
+        };
+        let led = match Led::new() {
+            Ok(led) => led,
+            Err(error) => {
+                eprintln!("Failed to create LED: {}", error);
                 return Err(error);
             }
         };
@@ -67,7 +63,8 @@ impl Rover {
             right_motor,
             cluster,
             direction: Direction::None,
-            // detection_toggle: DetectionToggle::On,
+            detection_on: true,
+            led,
             speed: 1.0,
         })
     }
@@ -92,7 +89,14 @@ impl Rover {
         self.speed = new_speed;
     }
 
+    /// Moves the rover forward.
+    ///
+    /// Doesn't move if obstacle is detected.
     pub fn forward(&mut self) {
+        if self.cluster.get_front_proximity() == Proximity::Near {
+            return;
+        }
+
         self.direction = Direction::Forward;
         self.set_speed(self.speed);
 
@@ -116,7 +120,13 @@ impl Rover {
     }
 
     /// Moves the rover backward.
+    ///
+    /// Doesn't move if obstacle is detected.
     pub fn backward(&mut self) {
+        if self.cluster.get_rear_proximity() == Proximity::Near {
+            return;
+        }
+
         self.direction = Direction::Backward;
         self.set_speed(self.speed);
         match self.left_motor.backward() {
@@ -208,6 +218,30 @@ impl Rover {
         self.set_speed(self.speed);
     }
 
+    pub fn detection_on(&self) -> bool {
+        self.detection_on
+    }
+
+    pub fn turn_on_detection(&mut self) {
+        self.detection_on = true;
+    }
+
+    pub fn turn_off_detection(&mut self) {
+        self.detection_on = false;
+    }
+
+    pub fn poll(&mut self) {
+        self.cluster.poll();
+    }
+
+    pub fn get_front_proximity(&self) -> Proximity {
+        self.cluster.get_front_proximity()
+    }
+    
+    pub fn get_rear_proximity(&self) -> Proximity {
+        self.cluster.get_rear_proximity()
+    }
+
     /// Print out the controls for the rover
     pub fn print_controls(&self) {
         println!("\nRover Controls:");
@@ -217,6 +251,8 @@ impl Rover {
         println!("  D      -> turn right");
         println!("  M      -> increase speed");
         println!("  N      -> decrease speed");
+        println!("  T      -> Turn on detection");
+        println!("  Y      -> Turn off detection");
         println!("  Space  -> stop");
         println!("  X/Esc  -> exit");
         println!("  H      -> Reprint Controls");

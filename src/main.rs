@@ -1,23 +1,20 @@
-mod cluster;
-mod motor;
-mod rover;
-mod sensor;
-
+mod components;
 mod constants;
+mod enums;
 
-use crate::cluster::Proximity;
-use crate::motor::Direction;
+use crate::enums::direction::Direction;
+use crate::enums::proximity::Proximity;
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use std::error::Error;
 use std::time::Duration;
 
-use crate::rover::Rover;
+use crate::components::rover::Rover;
 struct RawModeGuard;
 
 fn main() {
-    println!("Starting motor test...");
+    println!("Starting rover...");
 
     let mut rover = match Rover::new() {
         Ok(rover) => rover,
@@ -53,16 +50,20 @@ impl RawModeGuard {
     }
 
     fn detect(&self, rover: &mut Rover) {
-        rover.cluster.poll();
+        if !rover.detection_on() {
+            return;
+        }
+
+        rover.poll();
 
         match rover.get_direction() {
             Direction::Forward => {
-                if rover.cluster.get_front_proximity() == Proximity::Near {
+                if rover.get_front_proximity() == Proximity::Near {
                     rover.stop();
                 }
             }
             Direction::Backward => {
-                if rover.cluster.get_rear_proximity() == Proximity::Near {
+                if rover.get_rear_proximity() == Proximity::Near {
                     rover.stop();
                 }
             }
@@ -126,6 +127,16 @@ impl RawModeGuard {
                         println!("\rStopped                     ");
                     }
 
+                    KeyCode::Char('t') | KeyCode::Char('T') => {
+                        rover.turn_on_detection();
+                        println!("\rDetection: On     ");
+                    }
+
+                    KeyCode::Char('y') | KeyCode::Char('Y') => {
+                        rover.turn_off_detection();
+                        println!("\rDetection: Off    ");
+                    }
+
                     KeyCode::Char('x') | KeyCode::Char('X') | KeyCode::Esc => {
                         rover.stop();
                         println!("\rExiting...                  ");
@@ -135,8 +146,6 @@ impl RawModeGuard {
                     _ => {}
                 }
             }
-
-            // break;
         }
 
         Ok(())

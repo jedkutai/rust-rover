@@ -1,17 +1,9 @@
 use rppal::gpio::OutputPin;
 use std::error::Error;
-/// Controls one DC motor through a motor driver.
-///
-/// The motor uses two direction pins and one PWM pin.
 
-const PWM_FREQUENCY: f64 = 1000.0;
+use crate::enums::direction::Direction;
+use crate::constants::pins::PWM_FREQUENCY;
 
-#[derive(Debug, PartialEq, Copy, Clone)]
-pub enum Direction {
-    Forward,
-    Backward,
-    None,
-}
 
 pub struct Motor {
     pin1: OutputPin,
