@@ -40,7 +40,7 @@ impl Rover {
 
         let left_motor = Motor::new(bin1, bin2, pwmb);
         let right_motor = Motor::new(ain1, ain2, pwma);
-        
+
         let cluster = match Cluster::new() {
             Ok(cluster) => cluster,
             Err(error) => {
@@ -97,6 +97,7 @@ impl Rover {
             return;
         }
 
+        self.reset_detection_led();
         self.direction = Direction::Forward;
         self.set_speed(self.speed);
 
@@ -127,6 +128,7 @@ impl Rover {
             return;
         }
 
+        self.reset_detection_led();
         self.direction = Direction::Backward;
         self.set_speed(self.speed);
         match self.left_motor.backward() {
@@ -152,6 +154,7 @@ impl Rover {
     ///
     /// It will spin in place (clockwise)
     pub fn turn_right(&mut self) {
+        self.reset_detection_led();
         match self.left_motor.forward() {
             Ok(()) => {}
             Err(error) => {
@@ -174,6 +177,7 @@ impl Rover {
     ///
     /// It will spin in place (counterclockwise)
     pub fn turn_left(&mut self) {
+        self.reset_detection_led();
         match self.left_motor.backward() {
             Ok(()) => {}
             Err(error) => {
@@ -203,10 +207,12 @@ impl Rover {
         self.set_speed(self.speed - 0.1);
     }
 
+    /// Returns the speed of the rover
     pub fn get_speed(&self) -> f64 {
         self.speed
     }
 
+    /// Returns the direction of the rover
     pub fn get_direction(&mut self) -> Direction {
         self.direction
     }
@@ -218,26 +224,54 @@ impl Rover {
         self.set_speed(self.speed);
     }
 
+    /// Returns true if detection is on
     pub fn detection_on(&self) -> bool {
         self.detection_on
     }
 
+    /// Turns on detection
     pub fn turn_on_detection(&mut self) {
         self.detection_on = true;
+        self.led.detection_mode_on();
     }
 
+    /// Turns off detection
     pub fn turn_off_detection(&mut self) {
         self.detection_on = false;
+        self.led.detection_mode_off();
     }
 
+    /// Triggers LED Detected
+    /// 
+    /// Only triggers if Detection mode is on
+    pub fn obstacle_detected(&mut self) {
+        if !self.detection_on {
+            return;
+        }
+        self.led.obstacle_detected();
+    }
+
+    /// Sets LED to correct state
+    pub fn reset_detection_led(&mut self) {
+        match self.detection_on {
+            true => self.led.detection_mode_on(),
+            false => self.led.detection_mode_off(),
+        }
+    }
+
+    /// Calls cluster poll function
+    /// 
+    /// It goes through all the sensors to check proximity
     pub fn poll(&mut self) {
         self.cluster.poll();
     }
 
+    /// Returns the front proximity
     pub fn get_front_proximity(&self) -> Proximity {
         self.cluster.get_front_proximity()
     }
     
+    /// Returns the rear proximity
     pub fn get_rear_proximity(&self) -> Proximity {
         self.cluster.get_rear_proximity()
     }

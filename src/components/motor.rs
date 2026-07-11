@@ -74,6 +74,14 @@ impl Motor {
     }
 }
 
+impl Drop for Motor {
+    fn drop(&mut self) {
+        self.pin1.set_low();
+        self.pin2.set_low();
+        self.pin_pwm.set_low();
+    }
+}
+
 #[cfg(test)]
 impl Motor {
     pub(crate) fn pin1_is_high(&self) -> bool {

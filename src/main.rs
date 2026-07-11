@@ -23,6 +23,7 @@ fn main() {
             return;
         }
     };
+    rover.turn_on_detection();
 
     rover.print_controls();
 
@@ -59,11 +60,13 @@ impl RawModeGuard {
         match rover.get_direction() {
             Direction::Forward => {
                 if rover.get_front_proximity() == Proximity::Near {
+                    rover.obstacle_detected();
                     rover.stop();
                 }
             }
             Direction::Backward => {
                 if rover.get_rear_proximity() == Proximity::Near {
+                    rover.obstacle_detected();
                     rover.stop();
                 }
             }
