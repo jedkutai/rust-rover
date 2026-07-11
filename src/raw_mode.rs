@@ -41,7 +41,6 @@ impl RawModeGuard {
     }
 
     pub fn drive(&self, rover: &mut Rover) -> Result<(), Box<dyn Error>> {
-        rover.turn_on_detection();
         loop {
             self.detect(rover);
 

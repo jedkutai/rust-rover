@@ -16,8 +16,7 @@ fn main() {
             return;
         }
     };
-    // rover.turn_on_detection();
-
+    rover.turn_on_detection();
     rover.print_controls();
 
     let _raw_mode = match RawModeGuard::new() {
