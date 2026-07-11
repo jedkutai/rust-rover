@@ -1,0 +1,4 @@
+RGB LED Red   → 330Ω resistor → GPIO19, physical pin 35
+RGB LED Green → 330Ω resistor → GPIO10, physical pin 19
+RGB LED Blue  → 330Ω resistor → GPIO9,  physical pin 21
+RGB LED -     → GND
