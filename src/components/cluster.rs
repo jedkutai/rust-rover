@@ -4,6 +4,7 @@ use std::thread::sleep;
 use std::time::Duration;
 
 use crate::components::sensor::Sensor;
+use crate::constants::others::{SENSOR_DISTANCE_MEDIUM, SENSOR_DISTANCE_NEAR};
 use crate::constants::{pins, times};
 use crate::enums::proximity::Proximity;
 
@@ -18,6 +19,10 @@ pub struct Cluster {
 }
 
 impl Cluster {
+    /// Creates new cluster
+    /// 
+    /// 3 front sensors (2 angled)
+    /// 1 rear
     pub fn new() -> Result<Self, Box<dyn Error>> {
         let gpio = Gpio::new()?;
 
@@ -45,12 +50,11 @@ impl Cluster {
             rear_sensor,
 
             front_proximity: Proximity::Far,
-            // right_proximity: Proximity::Far,
-            // left_proximity: Proximity::Far,
             rear_proximity: Proximity::Far,
         })
     }
 
+    /// Polls the sensors to set the front and rear proximities
     pub fn poll(&mut self) {
         let mut front_distance = 0.0;
 
@@ -62,7 +66,7 @@ impl Cluster {
                 eprintln!("Failed to read front distance: {}", error);
             }
         };
-        sleep(Duration::from_millis(times::POLL_PAUSE));
+        sleep(Duration::from_millis(times::POLL_TIME));
 
         match self.front_right_sensor.read_distance_cm() {
             Ok(distance) => {
@@ -73,7 +77,7 @@ impl Cluster {
             }
         };
 
-        sleep(Duration::from_millis(times::POLL_PAUSE));
+        sleep(Duration::from_millis(times::POLL_TIME));
 
         match self.front_left_sensor.read_distance_cm() {
             Ok(distance) => {
@@ -96,23 +100,24 @@ impl Cluster {
         self.front_proximity = self.distance_to_proximity(front_distance);
     }
 
+    /// Converts distance to proximity
     fn distance_to_proximity(&mut self, distance: f64) -> Proximity {
-        let near: f64 = 30.0;
-        let medium: f64 = 45.0;
 
-        if distance <= near {
+        if distance <= SENSOR_DISTANCE_NEAR {
             Proximity::Near
-        } else if distance <= medium {
+        } else if distance <= SENSOR_DISTANCE_MEDIUM {
             Proximity::Medium
         } else {
             Proximity::Far
         }
     }
 
+    // Returns front proximity
     pub fn get_front_proximity(&self) -> Proximity {
         self.front_proximity
     }
     
+    // Returns rear proximity
     pub fn get_rear_proximity(&self) -> Proximity {
         self.rear_proximity
     }

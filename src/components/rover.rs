@@ -23,8 +23,13 @@ pub struct Rover {
 }
 
 impl Rover {
-    /// Creates a new `Rover` from a left and right motor pair.
+    /// Creates a new `Rover` from a left and right motor pair, a cluster and an led.
+    /// 
     /// The two left motors and two right motors are treated as one since this is going to drive like a tank
+    /// 
+    /// The cluster is all of the sensors, 3 front, one rear
+    /// 
+    /// The led indicates drive mode
     pub fn new() -> Result<Self, Box<dyn Error>> {
         let gpio = Gpio::new()?;
 
@@ -69,6 +74,10 @@ impl Rover {
         })
     }
 
+    /// Sets the speed of the rover
+    /// 
+    /// Clamped at 0.2 and 1.0
+    /// Anything below 0.2 will not move the rover
     fn set_speed(&mut self, speed: f64) {
         let new_speed = speed.clamp(0.2, 1.0);
         match self.left_motor.set_speed(new_speed) {

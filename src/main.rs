@@ -1,10 +1,10 @@
 mod components;
 mod constants;
 mod enums;
-mod raw_mode;
+mod utils;
 
 use crate::components::rover::Rover;
-use crate::raw_mode::RawModeGuard;
+use crate::utils::raw_mode::RawModeGuard;
 
 fn main() {
     println!("Starting rover...");

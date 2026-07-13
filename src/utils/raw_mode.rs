@@ -11,11 +11,15 @@ use crate::components::rover::Rover;
 pub struct RawModeGuard;
 
 impl RawModeGuard {
+    /// Endables raw mode
     pub fn new() -> Result<Self, Box<dyn Error>> {
         enable_raw_mode()?;
         Ok(Self)
     }
 
+    /// Detects obstacles
+    /// 
+    /// Only takes action if the rover is moving forward/backward and detection mode is on
     fn detect(&self, rover: &mut Rover) {
         if !rover.detection_on() {
             return;
@@ -40,6 +44,9 @@ impl RawModeGuard {
         }
     }
 
+    /// Handles user inputs to control the rover
+    /// 
+    /// Allows: Direction, speed change and mode change
     pub fn drive(&self, rover: &mut Rover) -> Result<(), Box<dyn Error>> {
         loop {
             self.detect(rover);
@@ -122,6 +129,7 @@ impl RawModeGuard {
 }
 
 impl Drop for RawModeGuard {
+    /// Disables raw mode
     fn drop(&mut self) {
         let _ = disable_raw_mode();
     }

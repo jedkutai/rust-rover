@@ -3,6 +3,7 @@ use std::error::Error;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
+use crate::constants::others::SPEED_OF_SOUND;
 use crate::constants::times;
 
 pub struct Sensor {
@@ -11,18 +12,20 @@ pub struct Sensor {
 }
 
 impl Sensor {
+    /// Create sensor
     pub fn new(trig_pin: OutputPin, echo_pin: InputPin) -> Self {
         Self { trig_pin, echo_pin }
     }
 
+    /// Reads the distance between the sensor and obstacle
     pub fn read_distance_cm(&mut self) -> Result<f64, Box<dyn Error>> {
         // Make sure trigger starts low
         self.trig_pin.set_low();
-        sleep(Duration::from_micros(times::SENSOR_SET_LOW_PAUSE)); 
+        sleep(Duration::from_micros(times::SENSOR_SET_LOW_TIME)); 
 
-        // Send 10 microsecond pulse to start measurement
+        // Send pulse to start measurement
         self.trig_pin.set_high();
-        sleep(Duration::from_micros(times::SENSOR_SET_HIGH_PAUSE));
+        sleep(Duration::from_micros(times::SENSOR_SET_HIGH_TIME));
         self.trig_pin.set_low();
 
         // Wait for ECHO to go HIGH
@@ -43,9 +46,7 @@ impl Sensor {
 
         let echo_time = echo_start.elapsed();
 
-        // Speed of sound ≈ 34300 cm/s.
-        // Divide by 2 because sound travels to object and back.
-        let distance_cm = echo_time.as_secs_f64() * 34300.0 / 2.0;
+        let distance_cm = echo_time.as_secs_f64() * SPEED_OF_SOUND / 2.0;
 
         Ok(distance_cm)
     }
