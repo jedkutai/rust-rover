@@ -22,6 +22,7 @@ pub struct Rover {
     speed: f64,
 }
 
+// needs to be lest cluttered
 impl Rover {
     /// Creates a new `Rover` from a left and right motor pair, a cluster and an led.
     /// 
